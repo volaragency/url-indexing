@@ -1,62 +1,125 @@
-# Google Indexing Automation Script
+# **Google Indexing Automation Script**
 
-## Overview
+## **Overview**
 
-This Python script automates the process of submitting URLs to Google for indexing, leveraging multiple Google service accounts to handle authentication. By reading URLs and their statuses from a CSV file, the script efficiently manages the indexing or deletion of URLs from Google's index. This tool is particularly useful for SEO professionals and web administrators who need to manage large volumes of URL updates across different domains.
+This Python script automates the process of submitting URLs to the **Google Indexing API**. It ensures high-volume submission capability by leveraging multiple Google service accounts and automatically checking the HTTP status of each URL to determine the correct API action (URL\_UPDATED or URL\_DELETED).
 
-## Features
+This tool is designed for web administrators and SEO professionals who need to manage bulk indexing requests efficiently.
 
-- **CSV Input Handling**: Reads URLs and their statuses from a CSV file, allowing batch processing of URLs.
-- **Multiple Service Accounts**: Utilizes multiple Google service accounts for authentication, ensuring that API usage limits are not exceeded.
-- **Submission Limits**: Enforces a limit on the number of URL submissions per service account to comply with API quotas.
-- **Logging**: Captures and logs responses and errors to help with debugging and monitoring.
-- **Output Files**: Generates separate CSV files for each domain to track submission results and status updates.
+---
 
-## Prerequisites
+## **Features**
+
+* **Plain Text URL List:** Reads a simple list of URLs from a plain text file (urls.txt).  
+* **Automatic Status Check:** Performs an HTTP status check (HEAD request) on each URL to determine the appropriate Indexing API action.  
+* **Multiple Service Accounts:** Supports using multiple Google service accounts to ensure high-volume submission capabilities without hitting API limits.  
+* **Submission Quotas:** Enforces a limit (**200 URLs**) per service account before automatically switching to the next account.  
+* **Output and Logging:** Generates comprehensive log files and separate CSV output files for each domain to track submission results, HTTP status codes, and actions taken.
+
+---
+
+## **Dependencies**
+
+The script relies on the following Python packages, listed in the requirements.txt file:
+
+google-api-python-client  
+google-auth-oauthlib  
+requests
+
+---
+
+## **Prerequisites**
 
 To use this script, ensure you have the following:
 
-- **Python 3.6 or Higher**: The script requires Python version 3.6 or later.
-- **Google API Client Library for Python**: Install via pip to interact with Google APIs.
-- **OAuth2Client Library**: Required for managing authentication with Google services.
-- **CSV File**: Prepare a CSV file containing the URLs and their corresponding statuses. The CSV should be formatted as follows:
+1. **Python 3.6 or Higher** installed.  
+2. **Multiple Google service account JSON key files** (e.g., indexing.json, indexing2.json, etc.).  
+3. The **Google Indexing API** must be enabled in your Google Cloud Project.  
+4. The domains you wish to index must be verified in Google Search Console for **each** service account's client email.
 
-  ```csv
-  URL,Status
-  https://example.com/page1,URL_UPDATED
-  https://example.com/page2,URL_DELETED
+---
 
-## Setup Instructions
+## **Setup and Operation**
 
-### 1. Clone the Repository
+### **Step 1: Clone the Repository**
 
 Clone the repository to your local machine:
 
-    git clone https://github.com/yourusername/google-indexing-script.git
-    cd google-indexing-script
+```Bash  
+git clone https://github.com/yourusername/google-indexing-script.git  
+cd google-indexing-script
+```
+### **Step 2: Install Dependencies**
 
-## 2. Install Dependencies
-Install the required Python libraries using pip:
+Use the provided requirements.txt file to install all necessary Python libraries:
 
-    
-    pip install oauth2client google-api-python-client
+```Bash  
+pip install -r requirements.txt
+```
+### **Step 3: Configure Service Accounts**
 
-## 3. Create Service Account JSON Key Files
-Obtain multiple service account JSON key files from the Google Cloud Console. Place these files in the same directory as your script. Update the JSON_KEY_FILES list in the script to include the filenames of your JSON key files.
+1. Place all your service account JSON key files (e.g., indexing.json, indexing2.json, etc.) into the main script directory.  
+2. Verify the list of JSON file names in the JSON_KEY_FILES variable within the main.py script matches your files.
 
-## 4. Prepare the Input CSV File
-Create a CSV file named urls.csv with the structure as shown in the prerequisites section. Ensure this file is in the same directory as the script.
+```Bash  
+JSON_KEY_FILES = [
+    "indexing.json",
+    "indexing2.json",
+    "indexing3.json",
+    "indexing4.json",
+    "indexing5.json"
+]
+```
 
-## License
-This project is licensed under the MIT License. For more details, visit the GitHub repository.
+### **Step 4: Prepare the Input File**
 
-## Related Links
+Create a plain text file named **urls.txt** in the script directory. It must contain one complete URL per line.
+
+***urls.txt*** format example  
+```
+https://strongrootspreschool.com/  
+https://strongrootspreschool.com/blog  
+https://strongrootspreschool.com/deleted-page
+```
+### **Step 5: Run the Script**
+
+Execute the script from your terminal:
+
+```Bash  
+python main.py
+```
+The script will begin checking URLs and submitting requests, automatically switching service accounts after every **200 URLs**.
+
+### **Output Files**
+
+Upon completion, the script generates:
+
+* A comprehensive log file named like indexing\_YYYYMMDD\_HHMMSS.log.  
+* Domain-specific CSV report files (e.g., strongrootspreschool.com\_2025-10-22\_1.csv) detailing the status code and action taken for each URL.
+
+---
+
+## **Status Code Logic**
+
+The script checks the HTTP status code for each URL before attempting an Indexing API submission. The corresponding action is determined as follows:
+
+| HTTP Status Code | Indexing API Action | CSV Status Logged | Script Action |
+| :---- | :---- | :---- | :---- |
+| **200–299 (OK)** | URL_UPDATED | URL_UPDATED | Submits a request to update the URL. |
+| **400–499 (Client Errors)** | URL_DELETED | URL_DELETED | Submits a request to remove the URL from the index. |
+| **0 (Network Error)** | N/A | UNREACHABLE | Skips submission (URL is unreachable). |
+| **Other (e.g., 3xx, 5xx)** | N/A | URL_SKIPPED | Skips submission (status code suggests non-indexing issue or is a temporary redirect). |
+
+---
+
+## **License**
+
+This project is licensed under the MIT License.
+
+---
+
+## **Related Links**
+
 For more information on SEO and URL indexing, visit our websites:
 
-<a href="https://thevolar.com/" rel="follow" target="_blank">Volar Agency</a><br>
-<a href="https://foxseo.com/">Fox SEO</a>
-
-
-Feel free to explore these resources for additional insights and services related to search engine optimization and web management.
-
-
+[**Volar Agency**](https://thevolar.com)
