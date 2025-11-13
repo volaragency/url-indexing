@@ -1,6 +1,5 @@
 """
 Google Search Console URL Indexing via API
-Fixed version with proper error handling and closure resolution
 """
 
 from google.oauth2 import service_account
@@ -500,4 +499,5 @@ def main():
 
 
 if __name__ == "__main__":
+
     main()
